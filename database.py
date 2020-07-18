@@ -1,12 +1,8 @@
 from psycopg2 import connect, ProgrammingError
 import psycopg2.errors
 from contextlib import contextmanager
+from local_settings import user, password, host, database
 import datetime
-
-user = 'postgres'
-password = 'coderslab'
-host = 'localhost'
-database = 'repeater'
 
 
 @contextmanager
@@ -75,5 +71,32 @@ def assign_categories():
                     WHERE id={}
                     '''.format(change_category(word[4]), word[0])
                     edit.execute(command_to_execute)
+    except Exception as e:
+        print(e)
+
+
+def words_to_repeat():
+    words_list = []
+    current_date = datetime.datetime.now()
+    try:
+        with database_operation() as d:
+            command_to_execute = '''
+            SELECT * FROM words;
+            '''
+            all_words = d.execute(command_to_execute)
+            for word in d:
+                word_to_append = False
+                category = word[3]
+                last_correct_answer = word[5]
+                if category == 0:
+                    word_to_append = True
+                elif category == 1:
+                    if current_date > (last_correct_answer + datetime.timedelta(hours=6)):
+                        word_to_append = True
+                if word_to_append:
+                    words_list.append((word[0], word[1], word[2]))
+
+        return words_list
+
     except Exception as e:
         print(e)

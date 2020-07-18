@@ -1,5 +1,5 @@
 from tkinter import *
-from database import create_main_table, add_new_word, assign_categories
+from database import create_main_table, add_new_word, assign_categories, words_to_repeat
 from googletrans import Translator
 
 
@@ -8,6 +8,12 @@ class AppMenu:
         self.env = env
         self.new_word_button = Button(text='Add new word', command=self.add_new_word)
         self.repeat_button = Button(text='Repeat', command=self.repeat_words)
+        self.word_en = None
+        self.word_pl = None
+        self.correct_answer = ''
+        self.correct_answer_label = None
+        self.repeat_start_button = None
+        self.counter = 0
         self.new_word_frame = None
         self.repeat_frame = Frame(self.env)
         self.menu_display()
@@ -18,8 +24,39 @@ class AppMenu:
         self.new_word_button.pack()
 
     def repeat_words(self):
+        def repeat():
+            def correct():
+                self.correct_answer = words[self.counter][2]
+                self.correct_answer_label = Label(self.repeat_frame, text=self.correct_answer)
+                self.correct_answer_label.grid(row=3, column=1, columnspan=2, sticky=W+E+N+S)
+                correct_button.configure(state=DISABLED)
+                wrong_button.configure(state=DISABLED)
+                self.counter += 1 if self.counter != len(words) - 1 else 0
+                print(self.counter, len(words))
+                self.repeat_frame.after(1000, repeat)
+
+            words_to_repeat_label.pack_forget()
+            self.repeat_start_button.pack_forget()
+            if self.correct_answer_label:
+                self.correct_answer_label.destroy()
+            self.word_en = Label(self.repeat_frame, text=words[self.counter][1])
+            self.word_en.grid(row=1, column=1, columnspan=2, sticky=W+E+N+S)
+            correct_button = Button(self.repeat_frame, text='+', command=correct)
+            wrong_button = Button(self.repeat_frame, text='x')
+            correct_button.grid(row=2, column=1)
+            wrong_button.grid(row=2, column=2)
+
         self.new_word_button.pack_forget()
+        self.repeat_button.pack_forget()
         self.repeat_frame.pack()
+        words = words_to_repeat()
+
+        words_to_repeat_label = Label(self.repeat_frame, text='You have {} words to repeat'.format(len(words)))
+        words_to_repeat_label.pack()
+        self.repeat_start_button = Button(self.repeat_frame, text='START', command=repeat)
+        self.repeat_start_button.pack()
+
+
 
     def add_new_word(self):
         self.new_word_button.pack_forget()
