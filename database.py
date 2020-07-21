@@ -93,6 +93,9 @@ def words_to_repeat():
                 elif category == 1:
                     if current_date > (last_correct_answer + datetime.timedelta(hours=6)):
                         word_to_append = True
+                elif category == 2:
+                    if current_date > (last_correct_answer + datetime.timedelta(days=1)):
+                        word_to_append = True
                 if word_to_append:
                     words_list.append((word[0], word[1], word[2]))
 
@@ -100,3 +103,35 @@ def words_to_repeat():
 
     except Exception as e:
         print(e)
+
+
+def edit_record(column_name, word_id, new_value):
+    with database_operation() as edit:
+        command_to_execute = '''
+        UPDATE words
+        SET {}='{}'
+        WHERE id={}
+        '''.format(column_name, new_value, word_id)
+        edit.execute(command_to_execute)
+
+
+def category_action(word_id, action):
+    current_time = datetime.datetime.now()
+    category = None
+    with database_operation() as d:
+        command_to_execute = '''
+        SELECT category FROM words WHERE id={} ;
+        '''.format(word_id)
+        d.execute(command_to_execute)
+        for data in d:
+            category = data[0]
+            print(category)
+        if action == '-':
+            if category > 0:
+                category -= 1
+                print(category)
+        elif action == '+':
+            edit_record('last_correct_answer', word_id, current_time)
+            if category < 7:
+                category += 1
+        edit_record('category', word_id, category)
