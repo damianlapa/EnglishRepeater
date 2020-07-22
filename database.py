@@ -25,6 +25,7 @@ def create_main_table():
             d.execute(command_to_execute)
     except psycopg2.errors.DuplicateTable:
         print('Table Duplicate')
+        pass
 
 
 def add_new_word(english, polish):

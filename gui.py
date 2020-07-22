@@ -1,6 +1,7 @@
 from tkinter import *
 from database import create_main_table, add_new_word, assign_categories, words_to_repeat, category_action
 from googletrans import Translator
+from local_settings import first_language, second_language
 
 
 class AppMenu:
@@ -8,7 +9,7 @@ class AppMenu:
         self.env = env
         self.new_word_button = Button(text='Add new word', command=self.add_new_word)
         self.repeat_button = Button(text='Repeat', command=self.repeat_words)
-        self.main_menu_button = Button(text='<', font='Helvetica 30 bold')
+        self.main_menu_button = Button(text='<', font='Helvetica 30 bold', command=self.return_to_main_menu)
         self.word_en = None
         self.word_pl = None
         self.correct_answer = ''
@@ -17,6 +18,7 @@ class AppMenu:
         self.counter = 0
         self.new_word_frame = None
         self.repeat_frame = Frame(self.env)
+        create_main_table()
         self.menu_display()
         self.run()
 
@@ -45,8 +47,10 @@ class AppMenu:
                 self.correct_answer_label.destroy()
             self.word_en = Label(self.repeat_frame, text=words[self.counter][1], font='Helvetica 15')
             self.word_en.grid(row=1, column=1, columnspan=2, sticky=W + E + N + S)
-            correct_button = Button(self.repeat_frame, text='+', command=lambda: answer('+'))
-            wrong_button = Button(self.repeat_frame, text='x', command=lambda: answer('-'))
+            correct_button = Button(self.repeat_frame, text='+', font='Helvetica 30', fg='green',
+                                    command=lambda: answer('+'))
+            wrong_button = Button(self.repeat_frame, text='x', font='Helvetica 30', fg='red',
+                                  command=lambda: answer('-'))
             correct_button.grid(row=2, column=1)
             wrong_button.grid(row=2, column=2)
 
@@ -69,9 +73,7 @@ class AppMenu:
         if not self.new_word_frame:
             def add_word():
                 translator = Translator()
-                translation = translator.translate(english.get(), dest='pl', src='en')
-                print(translation)
-                print(translation.text)
+                translation = translator.translate(english.get(), dest=second_language[1], src=first_language[1])
                 add_new_word(english.get(), translation.text)
                 self.new_word_frame.destroy()
                 self.new_word_frame = None
@@ -80,17 +82,16 @@ class AppMenu:
             def dynamic_translation(event):
 
                 translator = Translator()
-                translation = translator.translate(english.get(), dest='pl')
-                print(event, english.get(), translation.text)
+                translation = translator.translate(english.get(), dest=second_language[1])
                 polish.delete(0, END)
                 polish.insert(0, translation.text)
 
             self.new_word_frame = Frame(self.env)
-            english_label = Label(self.new_word_frame, text='English')
+            english_label = Label(self.new_word_frame, text=first_language[0])
             english_label.pack()
             english = Entry(self.new_word_frame)
             english.pack()
-            polish_label = Label(self.new_word_frame, text='Polish')
+            polish_label = Label(self.new_word_frame, text=second_language[0])
             polish_label.pack()
             polish = Entry(self.new_word_frame)
             polish.pack()
@@ -100,6 +101,23 @@ class AppMenu:
             english.bind('<KeyRelease>', dynamic_translation)
         else:
             pass
+
+    def return_to_main_menu(self):
+        if self.new_word_button:
+            self.new_word_button.pack_forget()
+        if self.repeat_button:
+            self.repeat_button.pack_forget()
+        if self.repeat_frame:
+            self.repeat_frame.pack_forget()
+            self.repeat_frame.destroy()
+            self.repeat_frame = Frame(self.env)
+        if self.repeat_start_button:
+            self.repeat_start_button.pack_forget()
+        if self.new_word_frame:
+            self.new_word_frame.pack_forget()
+            self.new_word_frame.destroy()
+            self.new_word_frame = None
+        self.menu_display()
 
     def run(self):
         # assign_categories()
