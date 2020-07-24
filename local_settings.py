@@ -1,8 +1,8 @@
 # Database connection data:
-user = ''
-password = ''
-host = ''
-database = ''
+user = 'postgres'
+password = 'coderslab'
+host = 'localhost'
+database = 'repeater'
 
 # Languages data
 first_language = ('English', 'en')

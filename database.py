@@ -56,26 +56,6 @@ def change_category(last_correct_answer):
     return 0
 
 
-def assign_categories():
-    try:
-        with database_operation() as d:
-            command_to_execute = '''
-            SELECT * FROM words;
-            '''
-            all_words = d.execute(command_to_execute)
-            for word in d:
-                print(word[0], word[1], '-', word[2], change_category(word[4]))
-                with database_operation() as edit:
-                    command_to_execute = '''
-                    UPDATE words
-                    SET category={}
-                    WHERE id={}
-                    '''.format(change_category(word[4]), word[0])
-                    edit.execute(command_to_execute)
-    except Exception as e:
-        print(e)
-
-
 def words_to_repeat():
     words_list = []
     current_date = datetime.datetime.now()
@@ -136,3 +116,26 @@ def category_action(word_id, action):
             if category < 7:
                 category += 1
         edit_record('category', word_id, category)
+
+
+def delete_record(word_id):
+    print('delete', word_id)
+    with database_operation() as delete:
+        command_to_execute = '''
+           DELETE FROM words
+           WHERE id={}
+           '''.format(word_id)
+        delete.execute(command_to_execute)
+
+
+def get_all_records():
+    all_records = []
+    with database_operation() as d:
+        command_to_execute = '''
+        SELECT * FROM words
+        '''
+        d.execute(command_to_execute)
+        for word in d:
+            all_records.append((word[0], word[1], word[2], word[3],
+                               datetime.datetime.strftime(word[5], '%m-%d %H:%M')))
+    return all_records
